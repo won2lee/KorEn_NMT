@@ -7,3 +7,7 @@ sanity_check_en_es_data/
 model.bi*
 kor_src
 en_made
+
+# added
+sanity*
+etc_file*/
