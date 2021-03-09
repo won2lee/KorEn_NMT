@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
+not much changed from 
 CS224N 2018-19: Homework 4
 vocab.py: Vocabulary Generation
 Pencheng Yin <pcyin@cs.cmu.edu>

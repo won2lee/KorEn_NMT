@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
+not much changed from 
 CS224N 2018-19: Homework 4
 model_embeddings.py: Embeddings for the NMT model
 Pencheng Yin <pcyin@cs.cmu.edu>

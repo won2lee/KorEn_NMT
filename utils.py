@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-CS224N 2018-19: Homework 4
-nmt.py: NMT Model
-Pencheng Yin <pcyin@cs.cmu.edu>
-Sahil Chopra <schopra8@stanford.edu>
+Skeleton of this code is based on 
+Stanford CS224N 2018-19: Homework 4 (code lines : )
+however about 2/3 of the code is modified and added (code lines : )
 """
 
 import math
