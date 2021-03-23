@@ -3,10 +3,17 @@ outputs/
 ref_origin_py/
 ref_py/
 sanity_check_en_es_data/
+.ipynb_checkpoints/
+__pycache__/
 
 model.bi*
 kor_src
 en_made
+.DS_Store
+vocab.json
+run_en2en.sh
+run_ko2en.sh
+run_ko2ko.sh
 
 # added
 sanity*

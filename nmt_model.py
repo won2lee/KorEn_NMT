@@ -209,46 +209,17 @@ class NMT(nn.Module):
             self.bt_grad =1     #requires_grad : True ===> 계속 중복 지정하지 않도록 
 
         if mapping==1:            
-            #if self.count % 10 == 0: #slang == tlang: 
-            #self.map_en.weight.data = map_en #torch.tensor(map_en,device=self.device) 
-            #self.map_ko.weight.data = map_en #torch.tensor(map_en,device=self.device)
 
-            """   
-            xW = self.map_en.weight.data
-            self.map_en.weight.data = 1.01 * xW - 0.01 * torch.mm(torch.mm(xW, xW.transpose(1,0)),xW)
-            xW = self.map_ko.weight.data
-            self.map_ko.weight.data = 1.01 * xW - 0.01 * torch.mm(torch.mm(xW, xW.transpose(1,0)),xW)
-                         
-            if self.count % 400 ==0:
-                #print(self.count)
-                if self.pre_map is not None:
-                    moved_map = torch.norm(self.map_en.weight.data) # - self.pre_map)
-                    #if moved_map >0.00000001:
-                    print("map weight is moved !!! {} moved".format(moved_map))
-                    #else:
-                        #print("map weight is freezed !!! {} moved".format(moved_map)
-                self.pre_map = self.map_en.weight.data
-            self.count +=1
-            """
             source_padded, source_lengths = self.parallel_encode_new(source, slang, mapping=1 ) #slang_is_tlang=True)
             slang = 'ko' if slang =='en' else 'en'
         else:
             source_padded, source_lengths = self.parallel_encode_new(source, slang)
-
-        # enc_hiddens, dec_init_state = self.en_encode(source_padded, source_lengths) 
-        #enc_hiddens, dec_init_state = self.en_encode(source_padded, source_lengths) 
         
         if slang == 'en':         
             enc_hiddens, dec_init_state = self.en_encode(source_padded, source_lengths, self_trns=self_trns)             
         else:
             enc_hiddens, dec_init_state = self.ko_encode(source_padded, source_lengths, self_trns=self_trns)   
-        """
-        source_lengths = [len(s) for s in source]
-        # Convert list of lists into tensors
-        source_padded = self.vocab.vocs.to_input_tensor(source, device=self.device) 
-        source_embedded = self.model_embeddings.vocabs(source_padded) 
-        enc_hiddens, dec_init_state = self.en_encode(source_embedded, source_lengths)
-        """           
+        
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
                                
         tgt = [[w for w in s if w not in self.sbol] for s in target]
@@ -268,28 +239,6 @@ class NMT(nn.Module):
         P2 = F.log_softmax(self.target_ox_projection(combined_outputs), dim=-1)
         target_ox_log_prob = torch.gather(P2, index=XO[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:]
         scores = target_gold_words_log_prob.sum(dim=0) + self.xo_weight * target_ox_log_prob.sum(dim=0)
-
-        """    
-        else:
-            target_padded = self.vocab.vocs.to_input_tensor(target, device=self.device)   # Tensor: (tgt_len, b)
-            combined_outputs = self.ke_decode(enc_hiddens, enc_masks, dec_init_state, target_padded) 
-            P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
-            target_masks = (target_padded != self.vocab.vocs['<pad>']).float()
-            target_gold_words_log_prob = torch.gather(P, index=target_padded[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:] 
-            scores = target_gold_words_log_prob.sum(dim=0)
-        """    
-        ###     Run the network forward:
-        ###     1. Apply the encoder to `source_padded` by calling `self.encode()`
-        ###     2. Generate sentence masks for `source_padded` by calling `self.generate_sent_masks()`
-        ###     3. Apply the decoder to compute combined-output by calling `self.decode()`
-        ###     4. Compute log probability distribution over the target vocabulary using the
-        ###        combined_outputs returned by theX `self.decode()` function.
-
-        # Zero out, probabilities for which we have nothing in the target text
-        #target_masks = (target_padded != self.vocab.vocs['<pad>']).float()
-        
-        # Compute log probability of generating true target words
-        #target_gold_words_log_prob = torch.gather(P, index=target_padded[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:]
            
         return scores
 
@@ -611,42 +560,8 @@ class NMT(nn.Module):
         o_prev = torch.zeros(batch_size, self.hidden_size, device=self.device)
 
         # Initialize a list we will use to collect the combined output o_t on each step
-        combined_outputs = []
+        combined_outputs = [] 
 
-        ###     1. Apply the attention projection layer to `enc_hiddens` to obtain `enc_hiddens_proj`,
-        ###         which should be shape (b, src_len, h),
-        ###         where b = batch size, src_len = maximum source length, h = hidden size.
-        ###         This is applying W_{attProj} to h^enc, as described in the PDF.
-        ###     2. Construct tensor `Y` of target sentences with shape (tgt_len, b, e) using the target model embeddings.
-        ###         where tgt_len = maximum target sentence length, b = batch size, e = embedding size.
-        ###     3. Use the torch.split function to iterate over the time dimension of Y.
-        ###         Within the loop, this will give you Y_t of shape (1, b, e) where b = batch size, e = embedding size.
-        ###             - Squeeze Y_t into a tensor of dimension (b, e). 
-        ###             - Construct Ybar_t by concatenating Y_t with o_prev.
-        ###             - Use the step function to compute the the Decoder's next (cell, state) values
-        ###               as well as the new combined output o_t.
-        ###             - Append o_t to combined_outputs
-        ###             - Update o_prev to the new o_t.
-        ###     4. Use torch.stack to convert combined_outputs from a list length tgt_len of
-        ###         tensors shape (b, h), to a single tensor shape (tgt_len, b, h)
-        ###         where tgt_len = maximum target sentence length, b = batch size, h = hidden size.
-        ###
-        ### Note:
-        ###    - When using the squeeze() function make sure to specify the dimension you want to squeeze
-        ###      over. Otherwise, you will remove the batch dimension accidentally, if batch_size = 1.
-        ###   
-        ### Use the following docs to implement this functionality:
-        ###     Zeros Tensor:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.zeros
-        ###     Tensor Splitting (iteration):
-        ###         https://pytorch.org/docs/stable/torch.html#torch.split
-        ###     Tensor Dimension Squeezing:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.squeeze
-        ###     Tensor Concatenation:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.cat
-        ###     Tensor Stacking:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.stack
-        
         enc_hiddens_proj = self.ko_att_projection(enc_hiddens)  # batch, src_len, hidden)
         #Y = self.model_embeddings.target(target_padded)
         Y = target_embedded # self.parallel_decode(target, target_padded)  # (max_len, batch, emb)
@@ -680,31 +595,7 @@ class NMT(nn.Module):
         
         combined_outputs = torch.stack(combined_outputs)
 
-        return combined_outputs
-
-
-    # def ke_decode_old(self, enc_hiddens: torch.Tensor, enc_masks: torch.Tensor,
-    #             dec_init_state: Tuple[torch.Tensor, torch.Tensor], target_padded: torch.Tensor) -> torch.Tensor:
-
-    #     target_padded = target_padded[:-1]
-    #     dec_state = dec_init_state
-    #     batch_size = enc_hiddens.size(0)
-    #     o_prev = torch.zeros(batch_size, self.hidden_size, device=self.device)
-    #     combined_outputs = []
-        
-    #     enc_hiddens_proj = self.en_att_projection(enc_hiddens)
-    #     Y = self.model_embeddings.vocabs(target_padded)
-    #     for sp in torch.split(Y,1):
-    #         #if len(sp.squeeze().size()) != len(o_prev.size()):
-    #         #    print(sp.squeeze().size(),o_prev.size())
-    #         Ybar_t = torch.cat((sp.squeeze(0), o_prev), -1)
-    #         dec_state, o_t, e_t, _ = self.step(Ybar_t, dec_state, enc_hiddens, enc_hiddens_proj, enc_masks, tlang='en')
-    #         combined_outputs.append(o_t)
-    #         o_prev = o_t
-        
-    #     combined_outputs = torch.stack(combined_outputs)
-
-    #     return combined_outputs    
+        return combined_outputs 
         
 
     def step(self, Ybar_t: torch.Tensor,
@@ -735,29 +626,6 @@ class NMT(nn.Module):
         """
 
         combined_output = None
-
-        ### YOUR CODE HERE (~3 Lines)
-        ### TODO:
-        ###     1. Apply the decoder to `Ybar_t` and `dec_state`to obtain the new dec_state.
-        ###     2. Split dec_state into its two parts (dec_hidden, dec_cell)
-        ###     3. Compute the attention scores e_t, a Tensor shape (b, src_len). 
-        ###        Note: b = batch_size, src_len = maximum source length, h = hidden size.
-        ###
-        ###       Hints:
-        ###         - dec_hidden is shape (b, h) and corresponds to h^dec_t in the PDF (batched)
-        ###         - enc_hiddens_proj is shape (b, src_len, h) and corresponds to W_{attProj} h^enc (batched).
-        ###         - Use batched matrix multiplication (torch.bmm) to compute e_t.
-        ###         - To get the tensors into the right shapes for bmm, you will need to do some squeezing and unsqueezing.
-        ###         - When using the squeeze() function make sure to specify the dimension you want to squeeze
-        ###             over. Otherwise, you will remove the batch dimension accidentally, if batch_size = 1.
-        ###
-        ### Use the following docs to implement this functionality:
-        ###     Batch Multiplication:
-        ###        https://pytorch.org/docs/stable/torch.html#torch.bmm
-        ###     Tensor Unsqueeze:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.unsqueeze
-        ###     Tensor Squeeze:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.squeeze
         
         if tlang == 'en':
             _, dec_state = self.en_decoder(Ybar_t.unsqueeze(0), dec_state)
@@ -766,41 +634,11 @@ class NMT(nn.Module):
         
         e_t = torch.bmm(enc_hiddens_proj, dec_state[0][1].unsqueeze(-1)).squeeze(-1) #dec_state[0][1] : h, layer2
         # (b,len,hidden) matmul (b, hidden, 1) =>  (b,len,1) => (b,len)
-       
-        ### END YOUR CODE
 
         # Set e_t to -inf where enc_masks has 1
         if enc_masks is not None:
             e_t.data.masked_fill_(enc_masks.byte(), -float('inf'))
 
-        ### YOUR CODE HERE (~6 Lines)
-        ### TODO:
-        ###     1. Apply softmax to e_t to yield alpha_t
-        ###     2. Use batched matrix multiplication between alpha_t and enc_hiddens to obtain the
-        ###         attention output vector, a_t.splt_len_flattened
-        #$$     Hints:
-        ###           - alpha_t is shape (b, src_len)
-        ###           - enc_hiddens is shape (b, src_len, 2h)
-        ###           - a_t should be shape (b, 2h)
-        ###           - You will need to do some squeezing and unsqueezing.
-        ###     Note: b = batch size, src_len = maximum source length, h = hidden size.
-        ###
-        ###     3. Concatenate dec_hidden with a_t to compute tensor U_t
-        ###     4. Apply the combined output projection layer to U_t to compute tensor V_t
-        ###     5. Compute tensor O_t by first applying the Tanh function and then the dropout layer.
-        ###
-        ### Use the following docs to implement this functionality:
-        ###     Softmax:
-        ###         https://pytorch.org/docs/stable/nn.html#torch.nn.functional.softmax
-        ###     Batch Multiplication:
-        ###        https://pytorch.org/docs/stable/torch.html#torch.bmm
-        ###     Tensor View:
-        ###         https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
-        ###     Tensor Concatenation:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.cat
-        ###     Tanh:
-        ###         https://pytorch.org/docs/stable/torch.html#torch.tanh
-        
         alpha_t = torch.softmax(e_t, -1).unsqueeze(-2)
         a_t = torch.bmm(alpha_t, enc_hiddens).squeeze(-2)
         #print("a_t.shape = ", a_t.shape)
