@@ -51,42 +51,6 @@ class NMT(nn.Module):
         self.notEn = get_notEn(self.vocab)
         #self.sbol_padded = self.vocab.vocs.to_input_tensor([['_'],['^'],['`']], device=self.device)
 
-        # default values
-
-        self.map_en = None 
-        self.map_ko = None
-
-        self.en_encoder = None 
-        self.ko_decoder = None
-        self.en_h_projection = None
-        self.en_c_projection = None
-        self.ko_att_projection = None
-        self.ko_combined_output_projection = None
-        #self.ek_target_vocab_projection = None
-        
-        self.ko_encoder = None 
-        self.en_decoder = None
-        self.ko_h_projection = None
-        self.ko_c_projection = None
-        self.en_att_projection = None
-        self.en_combined_output_projection = None
-        #self.ke_target_vocab_projection = None 
-
-        self.target_vocab_projection = None   
-        
-        self.dropout = None
-        self.dropout_10 = None
-
-        self.sub_encoder= None
-        self.en_gate = None
-        self.sub_en_projection = None  
-        
-        self.sub_decoder= None
-        self.de_gate = None
-        self.sub_de_projection = None
-        
-        self.target_ox_projection = None
-
         self.en_encoder = nn.LSTM(embed_size, self.hidden_size, num_layers=2, bidirectional=True)
         self.ko_decoder = nn.LSTM(embed_size+self.hidden_size, self.hidden_size, num_layers=2)
         self.en_h1_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False) 
@@ -140,17 +104,8 @@ class NMT(nn.Module):
         self.st_grad = 1
         self.bt_grad = 1
 
-        """
-        self.ko_decoder.requires_grad = False
-        self.en_decoder.requires_grad = False
-        self.en_att_projection.weight.requires_grad = False
-        self.ko_att_projection.weight.requires_grad = False       
-        self.en_combined_output_projection.weight.requires_grad = False
-        self.ko_combined_output_projection.weight.requires_grad = False
-        self.target_vocab_projection.weight.requires_grad = False
-        """
-
-    def forward(self, source: List[List[str]], target: List[List[str]], slang, tlang, mapping=0, self_trns=0, back_trns=0): # -> torch.Tensor:
+        
+    def forward(self, source: List[List[str]], target: List[List[str]], slang, tlang, mapping=0, self_trns=0, back_trns=0): 
         """ Take a mini-batch of source and target sentences, compute the log-likelihood of
         target sentences under the language models learned by the NMT system.
 

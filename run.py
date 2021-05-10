@@ -464,7 +464,7 @@ def train(args: Dict):
                     cut_lines= [sum([c for i,c in enumerate(cutlines) if i%2==0])/nK, sum([c for i,c in enumerate(cutlines) if i%2==1])/nK]
                     print("{} sents are back-translated .......    cutlines : {}  {}".format(len(nmted_sents)*2*nK,cut_lines[0], cut_lines[1]))
 
-            optimizer.zero_grad()
+            #optimizer.zero_grad()
 
             batch_size = train_batch_size #len(src_sents)
 
@@ -613,7 +613,8 @@ def train(args: Dict):
             #batch_loss = example_losses.sum() 
             batch_loss = batch_loss / loss_base
             loss = batch_loss / batch_size
-
+            
+            optimizer.zero_grad()
             loss.backward()
 
             # clip gradient
