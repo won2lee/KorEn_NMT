@@ -46,7 +46,7 @@ class NMT(nn.Module):
 
         self.token = ['(', ')', ',', "'", '"','_','<s>','</s>']
         self.sbol = ['_','^','`']
-        self.ko_start = 54621
+        self.ko_start = 32653  #54621
         self.xo_weight = 1.0
         self.notEn = get_notEn(self.vocab)
         #self.sbol_padded = self.vocab.vocs.to_input_tensor([['_'],['^'],['`']], device=self.device)
@@ -75,15 +75,15 @@ class NMT(nn.Module):
         self.dropout = nn.Dropout(p=self.dropout_rate)
         self.dropout_10 = nn.Dropout(p=0.3)
 
-        self.sub_en_coder= nn.LSTM(embed_size, self.hidden_size)
-        self.en_gate = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
-        self.sub_en_projection = nn.Linear(self.hidden_size, self.hidden_size, bias=False) 
+        self.sub_en_coder= nn.LSTM(embed_size, embed_size)  #(embed_size, self.hidden_size)
+        self.en_gate = nn.Linear(embed_size, embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
+        self.sub_en_projection = nn.Linear(embed_size, embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
 
-        self.sub_ko_coder= nn.LSTM(embed_size, self.hidden_size)
-        self.ko_gate = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
-        self.sub_ko_projection = nn.Linear(self.hidden_size, self.hidden_size, bias=False) 
+        self.sub_ko_coder= nn.LSTM(embed_size, embed_size)  #(embed_size, self.hidden_size)
+        self.ko_gate = nn.Linear(embed_size, embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
+        self.sub_ko_projection = nn.Linear(embed_size, embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
         
-        self.cap_gate = nn.Linear(self.hidden_size, self.hidden_size, bias=False)
+        self.cap_gate = nn.Linear(embed_size,embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
     
         self.target_ox_projection = nn.Linear(self.hidden_size, 4, bias=False)  
 

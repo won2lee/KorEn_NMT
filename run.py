@@ -36,8 +36,8 @@ Options:
     --batch_plus=<int>                      batch_plus [default: 0]
     --seed=<int>                            seed [default: 0]
     --batch-size=<int>                      batch size [default: 24]  
-    --embed-size=<int>                      embedding size [default: 300]
-    --hidden-size=<int>                     hidden size [default: 300]
+    --embed-size=<int>                      embedding size [default: 128]
+    --hidden-size=<int>                     hidden size [default: 256]
     --clip-grad=<float>                     gradient clipping [default: 3.0]
     --log-every=<int>                       log every [default: 100]
     --max-epoch=<int>                       max epoch [default: 30]
@@ -63,7 +63,7 @@ import shutil
 
 from docopt import docopt
 from nltk.translate.bleu_score import corpus_bleu, sentence_bleu, SmoothingFunction
-from nmt_model import Ehypothesis, Khypothesis, NMT
+from nmt_model import Khypothesis, NMT
 import numpy as np
 from typing import List, Tuple, Dict, Set, Union
 from tqdm import tqdm
@@ -191,7 +191,7 @@ def train(args: Dict):
     hist_valid_scores = []
     train_time = begin_time = time.time()
     print('begin Maximum Likelihood training')
-
+    """
     params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(params['state_dict'])
     model = model.to(device)
@@ -200,6 +200,7 @@ def train(args: Dict):
     params2['param_groups'][0]['lr'] = l_rate
     optimizer.load_state_dict(params2)
     hist_valid_scores = [-3.515570, -3.509147, -3.508350]
+    """
 
     slang=args['--slang']
     tlang=args['--tlang']
