@@ -35,22 +35,22 @@ Options:
     --back_trans=<int>                      back_trans [default: 0] 
     --batch_plus=<int>                      batch_plus [default: 0]
     --seed=<int>                            seed [default: 0]
-    --batch-size=<int>                      batch size [default: 24]  
+    --batch-size=<int>                      batch size [default: 32]  
     --embed-size=<int>                      embedding size [default: 128]
     --hidden-size=<int>                     hidden size [default: 256]
     --clip-grad=<float>                     gradient clipping [default: 3.0]
     --log-every=<int>                       log every [default: 100]
     --max-epoch=<int>                       max epoch [default: 30]
     --input-feed                            use input feeding
-    --patience=<int>                        wait for how many iterations to decay learning rate [default: 20]
-    --max-num-trial=<int>                   terminate training after how many trials [default: 10]
-    --lr-decay=<float>                      learning rate decay [default: 1.0]
+    --patience=<int>                        wait for how many iterations to decay learning rate [default: 5]
+    --max-num-trial=<int>                   terminate training after how many trials [default: 5]
+    --lr-decay=<float>                      learning rate decay [default: 0.5]
     --beam-size=<int>                       beam size [default: 10]
     --sample-size=<int>                     sample size [default: 5]
     --lr=<float>                            learning rate [default: 0.0010]
     --uniform-init=<float>                  uniformly initialize all parameters [default: 0.1]
     --save-to=<file>                        model save path [default: model.bin]
-    --valid-niter=<int>                     perform validation after how many iterations [default: 400]
+    --valid-niter=<int>                     perform validation after how many iterations [default: 1000]
     --dropout=<float>                       dropout [default: 0.2]
     --max-decoding-time-step=<int>          maximum number of decoding time steps [default: 100]
 """
@@ -192,6 +192,12 @@ def train(args: Dict):
     train_time = begin_time = time.time()
     print('begin Maximum Likelihood training')
     """
+    params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
+    model.load_state_dict(params['state_dict'])
+    model = model.to(device)
+    optimizer.load_state_dict(torch.load(model_save_path + '.optim'))
+    hist_valid_scores = [-14.175984, -8.718] #,-6.264680]   
+
     params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(params['state_dict'])
     model = model.to(device)

@@ -326,16 +326,18 @@ class NMT(nn.Module):
   
         if lang == 'en':
             out,(last_h1,last_c1) = self.sub_en_coder(X_embed)
-            X_proj = self.sub_en_projection(out[1:])               #sbol 부분 제거
+            #X_proj = self.sub_en_projection(out[1:])               #sbol 부분 제거
+            X_proj = self.sub_en_projection(X_embed[1:])
             X_gate = torch.sigmoid(self.en_gate(X_embed[1:]))
 
         else:
             out,(last_h1,last_c1) = self.sub_ko_coder(X_embed)
-            X_proj = self.sub_ko_projection(out[1:])               #sbol 부분 제거
+            #X_proj = self.sub_ko_projection(out[1:])               #sbol 부분 제거
+            X_proj = self.sub_ko_projection(X_embed[1:])
             X_gate = torch.sigmoid(self.ko_gate(X_embed[1:]))
         #    #print("gate embed proj : {} {} {}".format(X_gate.size(), X_embed.size(), X_proj.size()))
 
-        X_way = self.dropout(X_gate * X_embed[1:] + (1-X_gate) * X_proj)       
+        X_way = self.dropout(X_gate * X_proj + (1-X_gate) * out[1:]) #X_proj)       
 
         #문장단위로 자르고 어절 단위로 자른 뒤 각 어절의 길이만 남기고 나머지는 버린 후 연결 (cat) 하여 문장으로 재구성         
         X_input = [torch.cat([ss[:Z_sub[i][j]]for j,ss in enumerate(
@@ -372,17 +374,22 @@ class NMT(nn.Module):
         #target_padded = [[w for j,w in s if target[i][j] not in sbols.keys()] for i,s in enumerate(tgt_padded)]]
         X = pad_sequence(X).squeeze(-1) 
         X_embed = self.model_embeddings.vocabs(X) 
-
+ 
         if lang == 'en':
             out,(last_h1,last_c1) = self.sub_en_coder(X_embed)
-            X_proj = self.sub_en_projection(out[1:])
+            #X_proj = self.sub_en_projection(out[1:])               #sbol 부분 제거
+            X_proj = self.sub_en_projection(X_embed[1:])
             X_gate = torch.sigmoid(self.en_gate(X_embed[1:]))
+
         else:
             out,(last_h1,last_c1) = self.sub_ko_coder(X_embed)
-            X_proj = self.sub_ko_projection(out[1:])
+            #X_proj = self.sub_ko_projection(out[1:])               #sbol 부분 제거
+            X_proj = self.sub_ko_projection(X_embed[1:])
             X_gate = torch.sigmoid(self.ko_gate(X_embed[1:]))
+        #    #print("gate embed proj : {} {} {}".format(X_gate.size(), X_embed.size(), X_proj.size()))
 
-        X_way = self.dropout(X_gate * X_embed[1:] + (1-X_gate) * X_proj)      
+        X_way = self.dropout(X_gate * X_proj + (1-X_gate) * out[1:]) #X_proj)  
+
 
         X_input = [torch.cat([ss[:Z_sub[i][j]]for j,ss in enumerate(
             torch.split(sss,1,1))],0) for i,sss in enumerate(torch.split(X_way,Z_len,1))]
@@ -409,7 +416,8 @@ class NMT(nn.Module):
         if lang =='en':
             out,(h,c) = self.sub_en_coder(X_embed,init_vecs)
             #X_proj = torch.tanh(self.sub_de_projection(out))
-            X_proj = self.sub_en_projection(out)
+            X_proj = self.sub_en_projection(X_embed)
+            #X_proj = self.sub_en_projection(out)
             X_gate = torch.sigmoid(self.en_gate(X_embed))
 
         else:
@@ -417,10 +425,13 @@ class NMT(nn.Module):
                 print("X_embed.size(), init_vecs[0].size() : {} {}".format(X_embed.size(), init_vecs[0].size()))
             out,(h,c) = self.sub_ko_coder(X_embed,init_vecs)
             #X_proj = torch.tanh(self.sub_de_projection(out))
-            X_proj = self.sub_ko_projection(out)
+            X_proj = self.sub_en_projection(X_embed)
+            #X_proj = self.sub_ko_projection(out)
             X_gate = torch.sigmoid(self.ko_gate(X_embed))
 
         X_way = (X_gate * X_embed + (1-X_gate) * X_proj).squeeze(0)
+        X_way = (X_gate * X_proj + (1-X_gate) * out[1:]).squeeze(0) 
+
         #print("X_way : {}".format(X_way.shape))      
         
         return X_way, (h,c)
