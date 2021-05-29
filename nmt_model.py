@@ -429,8 +429,8 @@ class NMT(nn.Module):
             #X_proj = self.sub_ko_projection(out)
             X_gate = torch.sigmoid(self.ko_gate(X_embed))
 
-        X_way = (X_gate * X_embed + (1-X_gate) * X_proj).squeeze(0)
-        X_way = (X_gate * X_proj + (1-X_gate) * out[1:]).squeeze(0) 
+        #X_way = (X_gate * X_embed + (1-X_gate) * X_proj).squeeze(0)
+        X_way = (X_gate * X_proj + (1-X_gate) * out).squeeze(0) 
 
         #print("X_way : {}".format(X_way.shape))      
         
