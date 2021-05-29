@@ -35,9 +35,12 @@ class NMT(nn.Module):
         @param dropout_rate (float): Dropout probability, for attention
         """
         super(NMT, self).__init__()
-        self.model_embeddings = ModelEmbeddings(embed_size, vocab)
-        self.char_embeddings = CharEmbeddings(char_size, embed_size, hidden_size)
+        self.raw_emb_size = embed_size # embed_size of the data as input to sub_process
+        self.embed_size = hidden_size # embed_size of inut to main (LSTM) process
         self.hidden_size = hidden_size
+        self.model_embeddings = ModelEmbeddings(self.raw_emb_size, vocab)
+        #self.char_embeddings = CharEmbeddings(char_size, self.raw_emb_size, self.hidden_size)
+
         self.dropout_rate = dropout_rate
         self.vocab = vocab
         self.wid2cid = wid2cid
@@ -51,8 +54,8 @@ class NMT(nn.Module):
         self.notEn = get_notEn(self.vocab)
         #self.sbol_padded = self.vocab.vocs.to_input_tensor([['_'],['^'],['`']], device=self.device)
 
-        self.en_encoder = nn.LSTM(embed_size, self.hidden_size, num_layers=2, bidirectional=True)
-        self.ko_decoder = nn.LSTM(embed_size+self.hidden_size, self.hidden_size, num_layers=2)
+        self.en_encoder = nn.LSTM(self.embed_size, self.hidden_size, num_layers=2, bidirectional=True)
+        self.ko_decoder = nn.LSTM(self.embed_size+self.hidden_size, self.hidden_size, num_layers=2)
         self.en_h1_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False) 
         self.en_h2_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False)   
         self.en_c1_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False)
@@ -61,8 +64,8 @@ class NMT(nn.Module):
         self.ko_combined_output_projection = nn.Linear(3*self.hidden_size, self.hidden_size, bias=False)
         #self.ek_target_vocab_projection = nn.Linear(self.hidden_size, len(self.vocab.vocs), bias=False)        
                 
-        self.ko_encoder = nn.LSTM(embed_size, self.hidden_size, num_layers=2, bidirectional=True)
-        self.en_decoder = nn.LSTM(embed_size+self.hidden_size, self.hidden_size, num_layers=2)
+        self.ko_encoder = nn.LSTM(self.embed_size, self.hidden_size, num_layers=2, bidirectional=True)
+        self.en_decoder = nn.LSTM(self.embed_size+self.hidden_size, self.hidden_size, num_layers=2)
         self.ko_h1_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False) 
         self.ko_h2_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False)   
         self.ko_c1_projection = nn.Linear(2*self.hidden_size, self.hidden_size, bias=False)
@@ -75,20 +78,21 @@ class NMT(nn.Module):
         self.dropout = nn.Dropout(p=self.dropout_rate)
         self.dropout_10 = nn.Dropout(p=0.3)
 
-        self.sub_en_coder= nn.LSTM(embed_size, embed_size)  #(embed_size, self.hidden_size)
-        self.en_gate = nn.Linear(embed_size, embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
-        self.sub_en_projection = nn.Linear(embed_size, embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
+        self.sub_en_coder= nn.LSTM(self.raw_emb_size, self.embed_size)  #(embed_size, self.hidden_size)
+        self.en_gate = nn.Linear(self.raw_emb_size, self.embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
+        self.sub_en_projection = nn.Linear(self.raw_emb_size, self.embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
 
-        self.sub_ko_coder= nn.LSTM(embed_size, embed_size)  #(embed_size, self.hidden_size)
-        self.ko_gate = nn.Linear(embed_size, embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
-        self.sub_ko_projection = nn.Linear(embed_size, embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
+        self.sub_ko_coder= nn.LSTM(self.raw_emb_size, self.embed_size)  #(embed_size, self.hidden_size)
+        self.ko_gate = nn.Linear(self.raw_emb_size, self.embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
+        self.sub_ko_projection = nn.Linear(self.raw_emb_size, self.embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
         
-        self.cap_gate = nn.Linear(embed_size,embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
+        #self.cap_gate : 잠정중단
+        #self.cap_gate = nn.Linear(self.raw_emb_size,self.raw_emb_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
     
         self.target_ox_projection = nn.Linear(self.hidden_size, 4, bias=False)  
 
-        self.map_en = nn.Linear(embed_size, embed_size, bias=False) #,requires_grad = False) 
-        self.map_ko = nn.Linear(embed_size, embed_size, bias=False) #,requires_grad = False)
+        self.map_en = nn.Linear(self.raw_emb_size, self.raw_emb_size, bias=False)  #(embed_size, embed_size, bias=False) #,requires_grad = False) 
+        self.map_ko = nn.Linear(self.raw_emb_size, self.raw_emb_size, bias=False) #,requires_grad = False)
 
         self.map_en.weight.requires_grad = False
         self.map_ko.weight.requires_grad = False
@@ -296,15 +300,19 @@ class NMT(nn.Module):
             X_embed = self.model_embeddings.vocabs(X)
             
         if lang =='en':
+            
             #cap_id, len_X = get_X_cap(source, self.sbol)
+            """ 잠정 comment out : 궅이 필요하지 않을 듯
             if len(cap_id) >0: #beam search의 경우(sents 수가 작은 경우) 대문자 시작이 없는 경우 발생 
                 cap_ids = torch.tensor(cap_id, device=self.device) #get_X_cap(source, sbol))
                 #print("cap_ids.size(), len_X, X.size : {} {} {}".format(cap_ids.size(), len_X, torch.tensor(X).size))               
-                #""" comment => noChar version, activate => Char version
-                X_cap = torch.tensor([[self.wid2cid[s[0].item()] for s in sss] for sss in torch.split(X[:,cap_ids],1,-1)], device=self.device)
+                #comment => noChar version, activate => Char version
+                X_cap = torch.tensor([[self.wid2cid[s[0].item()] for s in sss] 
+                    for sss in torch.split(X[:,cap_ids],1,-1)], device=self.device)
                 cap_gate = torch.sigmoid(self.cap_gate(X_embed[:,cap_ids]))   #* 0.
                 X_embed[:,cap_id] = cap_gate * X_embed[:, cap_id] + (1-cap_gate) * self.char_embeddings(X_cap).transpose(1,0)
-                #"""
+                #
+            """
         if mapping==1:   
             
             mask_X = (X_dict > -1).float().to(self.device).unsqueeze(-1)
