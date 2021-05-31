@@ -425,7 +425,7 @@ class NMT(nn.Module):
                 print("X_embed.size(), init_vecs[0].size() : {} {}".format(X_embed.size(), init_vecs[0].size()))
             out,(h,c) = self.sub_ko_coder(X_embed,init_vecs)
             #X_proj = torch.tanh(self.sub_de_projection(out))
-            X_proj = self.sub_en_projection(X_embed)
+            X_proj = self.sub_ko_projection(X_embed)
             #X_proj = self.sub_ko_projection(out)
             X_gate = torch.sigmoid(self.ko_gate(X_embed))
 

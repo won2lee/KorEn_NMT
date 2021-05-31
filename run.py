@@ -42,7 +42,7 @@ Options:
     --log-every=<int>                       log every [default: 100]
     --max-epoch=<int>                       max epoch [default: 30]
     --input-feed                            use input feeding
-    --patience=<int>                        wait for how many iterations to decay learning rate [default: 5]
+    --patience=<int>                        wait for how many iterations to decay learning rate [default: 3]
     --max-num-trial=<int>                   terminate training after how many trials [default: 5]
     --lr-decay=<float>                      learning rate decay [default: 0.5]
     --beam-size=<int>                       beam size [default: 10]
@@ -196,7 +196,7 @@ def train(args: Dict):
     model.load_state_dict(params['state_dict'])
     model = model.to(device)
     optimizer.load_state_dict(torch.load(model_save_path + '.optim'))
-    hist_valid_scores = [-14.175984, -8.718, -6.898558, -6.249343] # after 42000 iteration ,-6.264680]   
+    hist_valid_scores = [-14.175984, -8.718, -6.898558, -6.249343, -5.680400] # after 42000 iteration ,-6.264680]   
     """
     params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(params['state_dict'])
