@@ -742,7 +742,7 @@ class NMT(nn.Module):
                 log_p_t = F.log_softmax(self.target_vocab_projection(att_t), dim=-1)  
             """
             log_p_t = F.log_softmax(self.target_vocab_projection(att_t), dim=-1)
-            log_p2, xos = F.log_softmax(self.target_ox_projection(att_t), dim=-1).max(-1)
+            log_p2, xos = F.log_softmax(self.target_ox_projection(att_t), dim=-1).max(-1) #<- bug 인듯 vocab.size * xo.size 로 해야 할 듯, 현재 방식은 단어 예측에 관계 없이 xo를 고정시키는 결과 를 초래
             
             log_p2 = log_p2.unsqueeze(1).expand_as(log_p_t) * self.xo_weight   # 추가된 부분
             #xos = xos.unsqueeze(0).unsqueeze(-1)  # 추가된 부분

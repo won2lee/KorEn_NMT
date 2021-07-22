@@ -62,6 +62,7 @@ import shutil
 
 
 from docopt import docopt
+from itertools import cycle
 from nltk.translate.bleu_score import corpus_bleu, sentence_bleu, SmoothingFunction
 from nmt_model import Khypothesis, NMT
 import numpy as np
@@ -196,7 +197,7 @@ def train(args: Dict):
     model.load_state_dict(params['state_dict'])
     model = model.to(device)
     optimizer.load_state_dict(torch.load(model_save_path + '.optim'))
-    hist_valid_scores = [-14.175984, -8.718, -6.898558, -6.249343, -5.680400] # after 42000 iteration ,-6.264680]   
+    hist_valid_scores = [-14.175984, -8.718, -6.898558, -6.249343, -5.680400, -4.226284, -4.177508] # after 42000 iteration ,-6.264680]   
     """
     params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(params['state_dict'])
@@ -211,7 +212,7 @@ def train(args: Dict):
     slang=args['--slang']
     tlang=args['--tlang']
 
-    reverse_batch = batch_iter(train_data_reverse, train_batch_size, tlang, slang, shuffle=True) 
+    reverse_batch = cycle(batch_iter(train_data_reverse, train_batch_size, tlang, slang, shuffle=True))
     #forward_batch = batch_iter(train_data, train_batch_size, slang, tlang, shuffle=True)
 
     b_ratio = int(args['--batch_ratio'])
