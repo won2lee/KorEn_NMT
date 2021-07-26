@@ -79,11 +79,13 @@ class NMT(nn.Module):
         self.dropout_10 = nn.Dropout(p=0.3)
 
         self.sub_en_coder= nn.LSTM(self.raw_emb_size, self.embed_size)  #(embed_size, self.hidden_size)
-        self.en_gate = nn.Linear(self.raw_emb_size, self.embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
+        self.en_gate = nn.Linear(self.embed_size * 2, 1, bias=False)
+        #self.en_gate = nn.Linear(self.raw_emb_size, self.embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
         self.sub_en_projection = nn.Linear(self.raw_emb_size, self.embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
 
         self.sub_ko_coder= nn.LSTM(self.raw_emb_size, self.embed_size)  #(embed_size, self.hidden_size)
-        self.ko_gate = nn.Linear(self.raw_emb_size, self.embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
+        self.ko_gate = nn.Linear(self.embed_size * 2, 1, bias=False)
+        #self.ko_gate = nn.Linear(self.raw_emb_size, self.embed_size, bias=False) #(self.hidden_size, self.hidden_size, bias=False)
         self.sub_ko_projection = nn.Linear(self.raw_emb_size, self.embed_size, bias=False)    #(self.hidden_size, self.hidden_size, bias=False) 
         
         #self.cap_gate : 잠정중단
@@ -328,13 +330,13 @@ class NMT(nn.Module):
             out,(last_h1,last_c1) = self.sub_en_coder(X_embed)
             #X_proj = self.sub_en_projection(out[1:])               #sbol 부분 제거
             X_proj = self.sub_en_projection(X_embed[1:])
-            X_gate = torch.sigmoid(self.en_gate(X_embed[1:]))
+            X_gate = torch.sigmoid(self.en_gate(torch.cat((X_proj,out[1:]),-1)))        #X_embed[1:]))
 
         else:
             out,(last_h1,last_c1) = self.sub_ko_coder(X_embed)
             #X_proj = self.sub_ko_projection(out[1:])               #sbol 부분 제거
             X_proj = self.sub_ko_projection(X_embed[1:])
-            X_gate = torch.sigmoid(self.ko_gate(X_embed[1:]))
+            X_gate = torch.sigmoid(self.ko_gate(torch.cat((X_proj,out[1:]),-1)))       
         #    #print("gate embed proj : {} {} {}".format(X_gate.size(), X_embed.size(), X_proj.size()))
 
         X_way = self.dropout(X_gate * X_proj + (1-X_gate) * out[1:]) #X_proj)       
@@ -379,13 +381,15 @@ class NMT(nn.Module):
             out,(last_h1,last_c1) = self.sub_en_coder(X_embed)
             #X_proj = self.sub_en_projection(out[1:])               #sbol 부분 제거
             X_proj = self.sub_en_projection(X_embed[1:])
-            X_gate = torch.sigmoid(self.en_gate(X_embed[1:]))
+            #X_gate = torch.sigmoid(self.en_gate(X_embed[1:]))
+            X_gate = torch.sigmoid(self.en_gate(torch.cat((X_proj,out[1:]),-1))) 
 
         else:
             out,(last_h1,last_c1) = self.sub_ko_coder(X_embed)
             #X_proj = self.sub_ko_projection(out[1:])               #sbol 부분 제거
             X_proj = self.sub_ko_projection(X_embed[1:])
-            X_gate = torch.sigmoid(self.ko_gate(X_embed[1:]))
+            #X_gate = torch.sigmoid(self.ko_gate(X_embed[1:]))
+            X_gate = torch.sigmoid(self.ko_gate(torch.cat((X_proj,out[1:]),-1))) 
         #    #print("gate embed proj : {} {} {}".format(X_gate.size(), X_embed.size(), X_proj.size()))
 
         X_way = self.dropout(X_gate * X_proj + (1-X_gate) * out[1:]) #X_proj)  
@@ -418,7 +422,8 @@ class NMT(nn.Module):
             #X_proj = torch.tanh(self.sub_de_projection(out))
             X_proj = self.sub_en_projection(X_embed)
             #X_proj = self.sub_en_projection(out)
-            X_gate = torch.sigmoid(self.en_gate(X_embed))
+            #X_gate = torch.sigmoid(self.en_gate(X_embed))
+            X_gate = torch.sigmoid(self.en_gate(torch.cat((X_proj,out),-1))) 
 
         else:
             if init_vecs is not None and len(init_vecs[0].size())<3 or len(X_embed.size()) <3:
@@ -427,7 +432,8 @@ class NMT(nn.Module):
             #X_proj = torch.tanh(self.sub_de_projection(out))
             X_proj = self.sub_ko_projection(X_embed)
             #X_proj = self.sub_ko_projection(out)
-            X_gate = torch.sigmoid(self.ko_gate(X_embed))
+            #X_gate = torch.sigmoid(self.ko_gate(X_embed))
+            X_gate = torch.sigmoid(self.ko_gate(torch.cat((X_proj,out),-1)))
 
         #X_way = (X_gate * X_embed + (1-X_gate) * X_proj).squeeze(0)
         X_way = (X_gate * X_proj + (1-X_gate) * out).squeeze(0) 
