@@ -15,8 +15,8 @@ class Net(nn.Module): #Word Mapping
 
     def __init__(self, embedding, vocab, device, dropout_rate=0.2):
         super(Net, self).__init__()
-        self.hidden_size = 300
-        self.ko_start = 54621
+        self.hidden_size = 256
+        self.ko_start = 30004
         #self.dropout_rate = dropout_rate
         #self.vocab = vocab
         #self.token = ['(', ')', ',', "'", '"','_','<s>','</s>']
@@ -88,7 +88,7 @@ class Net(nn.Module): #Word Mapping
         # build dictionary
         for dico_method in ['csls_knn_10']:
             dico_build = 'S2T'
-            dico_max_size = 50000
+            dico_max_size = 30000
             # temp params / dictionary generation
             _params = {}
 
@@ -96,7 +96,7 @@ class Net(nn.Module): #Word Mapping
             _params['dico_method'] = dico_method # 'csls_knn_10'
             _params['dico_build'] = dico_build
             _params['dico_threshold'] = 0
-            _params['dico_max_rank'] = 50000
+            _params['dico_max_rank'] = 30000
             _params['dico_min_size'] = 0
             _params['dico_max_size'] = dico_max_size
             
