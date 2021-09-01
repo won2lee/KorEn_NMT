@@ -197,7 +197,7 @@ def train(args: Dict):
     model.load_state_dict(params['state_dict'])
     model = model.to(device)
     optimizer.load_state_dict(torch.load(model_save_path + '.optim'))
-    hist_valid_scores = [-14.175984, -7.2265, -4.534603, -4.244166, -4.203228 ] # after 42000 iteration ,-6.264680]   
+    hist_valid_scores = [-14.175984, -7.2265 ] # after 42000 iteration ,-6.264680]   
     """ 
     params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(params['state_dict'])

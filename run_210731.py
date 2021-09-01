@@ -36,7 +36,7 @@ Options:
     --batch_plus=<int>                      batch_plus [default: 0]
     --seed=<int>                            seed [default: 0]
     --batch-size=<int>                      batch size [default: 32]  
-    --embed-size=<int>                      embedding size [default: 256]
+    --embed-size=<int>                      embedding size [default: 128]
     --hidden-size=<int>                     hidden size [default: 256]
     --clip-grad=<float>                     gradient clipping [default: 3.0]
     --log-every=<int>                       log every [default: 100]
@@ -192,13 +192,13 @@ def train(args: Dict):
     hist_valid_scores = []
     train_time = begin_time = time.time()
     print('begin Maximum Likelihood training')
-      
+    
     params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(params['state_dict'])
     model = model.to(device)
     optimizer.load_state_dict(torch.load(model_save_path + '.optim'))
-    hist_valid_scores = [-14.175984, -7.2265, -4.534603, -4.244166, -4.203228 ] # after 42000 iteration ,-6.264680]   
-    """ 
+    hist_valid_scores = [-14.175984] # after 42000 iteration ,-6.264680]   
+    """
     params = torch.load(model_save_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(params['state_dict'])
     model = model.to(device)
