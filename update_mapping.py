@@ -17,7 +17,8 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
     path = 'net_Module/'
     cutline = 0.20 # <= 0.17
     epsilon = 0.0001
-    to_depreciate = 0.002 # <= 0.00005   
+    to_depreciate = 0.002 # <= 0.00005 
+    emb_dim =256  
 
     #to run out of "run.py", load params first and call this function !!! 
     """
@@ -38,7 +39,7 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
 
     #dictionary = torch.load(path + 'dictionary')
 
-    net = Net(embed, vocab, device, 300)
+    net = Net(embed, vocab, device, emb_dim)
     net = net.to(device)
 
     best = 0.1
@@ -63,7 +64,7 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
         for il, slang in enumerate(['en','ko']):
             dictionary = dictionary if slang == 'en' else [(s[1],s[0]) for s in dictionary]
             W, m_cosine, dict_lang, scores = net(dictionary, trained_mapping[il], slang, nul_mapping=nul_mapping)
-            to_plus = (0,54621) if slang == 'en' else (54621,0)
+            to_plus = (0,30004) if slang == 'en' else (30004,0) #54621
             dict_lang = dict_lang + torch.tensor(to_plus).to(device)
 
             bi_dict[il] = {k : {kv : vv - to_depreciate for kv,vv in v.items()} for k,v in bi_dict[il].items()} #to discount old_data
@@ -75,7 +76,7 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
             distance.append(m_cosine)
             added_w.append(sorted(new_dict.items(), key=lambda x:x[1][1])[:5])
 
-        m_diff = torch.norm(torch.mm(mappings[0],mappings[1]) - torch.eye(300).to(device))
+        m_diff = torch.norm(torch.mm(mappings[0],mappings[1]) - torch.eye(emb_dim).to(device))
         if m_diff > 0.1:
             print("torch.mm(W[0],W[1] is not Identity Matrix. difference = {}".format(m_diff))
         #else:
