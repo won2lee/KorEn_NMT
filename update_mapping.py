@@ -15,8 +15,8 @@ from net_Module.net_model import Net
 def net_run(embed, vocab, trained_mapping, nul_mapping, device):
 
     path = 'net_Module/'
-    cutline = 0.20 # <= 0.17
-    cutline2 = 0.18 # <= 0.17
+    cutline = 0.17 # <= 0.17
+    cutline2 = 0.16 # <= 0.17
     epsilon = 0.0001
     to_depreciate = 0.002 # <= 0.00005 
     emb_dim =256  

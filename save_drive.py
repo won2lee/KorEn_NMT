@@ -29,7 +29,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='program to preproceed')
     parser.add_argument('--in_path', default='/content/nmt_bi_128_256_0625/', 
                         help='root of the data')
-    parser.add_argument('--out_path', default="/content/drive/MyDrive/Cur_NMT/bin_1010/",
+    parser.add_argument('--out_path', default="/content/drive/MyDrive/Cur_NMT/bin_0902/",
                         help='destination')
     parser.add_argument('--out_path2', default="/content/drive/MyDrive/Cur_NMT/bin/",
                         help='destination')

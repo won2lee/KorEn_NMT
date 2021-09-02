@@ -50,7 +50,7 @@ Options:
     --lr=<float>                            learning rate [default: 0.0010]
     --uniform-init=<float>                  uniformly initialize all parameters [default: 0.1]
     --save-to=<file>                        model save path [default: model.bin]
-    --valid-niter=<int>                     perform validation after how many iterations [default: 1000]
+    --valid-niter=<int>                     perform validation after how many iterations [default: 400]
     --dropout=<float>                       dropout [default: 0.2]
     --max-decoding-time-step=<int>          maximum number of decoding time steps [default: 100]
 """
@@ -260,8 +260,8 @@ def train(args: Dict):
     if mapping_X==1:
         #map_en = torch.load(args['--map-en']).to(device)
         #map_ko = torch.load(args['--map-ko']).to(device)
-        eng_mapping_batch = batch_iter(train_data_eng, train_batch_size//b_ratio, slang, slang, shuffle=True, mapping=True) 
-        kor_mapping_batch = batch_iter(train_data_kor, train_batch_size//b_ratio, tlang, tlang, shuffle=True, mapping=True)
+        eng_mapping_batch = cycle(batch_iter(train_data_eng, train_batch_size//b_ratio, slang, slang, shuffle=True, mapping=True))
+        kor_mapping_batch = cycle(batch_iter(train_data_kor, train_batch_size//b_ratio, tlang, tlang, shuffle=True, mapping=True))
 
     if (back_trans_X==1 or self_trans_X ==1) and pseudo_load ==0:
         en_back_batch = batch_iter(train_data_eng, train_batch_size//b_ratio + batch_plus, slang, tlang, shuffle=True) 
@@ -338,7 +338,8 @@ def train(args: Dict):
 
                 if mapping_X==1:
                     #mapping = 1
-                    mapping=1 if n_X in [0,2,4,6,8,10,13,16,19,22,25,28,32,36,40,45,50,55] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
+                    #mapping=1 if n_X in [0,2,4,6,8,10,13,16,19,22,25,28,32,36,40,45,50,55] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
+                    mapping=1 if n_X in [0,3,6,9,12,16,20,24,28,32,36,40,44,48,52,56,60] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
                 else:
                     mapping =0
 
