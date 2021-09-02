@@ -39,8 +39,8 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
     vocab_keys_en = [k for k,v in vocab.vocs.word2id.items() if int(v) <30004]
     vocab_keys_ko = [k for k,v in vocab.vocs.word2id.items() if int(v) >30003]
     print(f"bi_dict_en_length : {len(bi_dict_en)}, bi_dict_ko_length : {len(bi_dict_ko)} ")
-    bi_dict_en = {k:v for k,v in bi_dict_en.items() if k in vocab_keys_en}
-    bi_dict_ko = {k:v for k,v in bi_dict_ko.items() if k in vocab_keys_ko}
+    bi_dict_en = {k:{kv:vv for kv,vv in v.items() if kv in vocab_keys_ko} for k,v in bi_dict_en.items() if k in vocab_keys_en}
+    bi_dict_ko = {k:{kv:vv for kv,vv in v.items() if kv in vocab_keys_en} for k,v in bi_dict_ko.items() if k in vocab_keys_ko}
     print(f"bi_dict_en_length : {len(bi_dict_en)}, bi_dict_ko_length : {len(bi_dict_ko)} ")
     #else:
     #bi_dict = {}

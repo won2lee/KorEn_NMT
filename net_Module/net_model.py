@@ -72,8 +72,8 @@ class Net(nn.Module): #Word Mapping
         """
         Mean-cosine model selection criterion.
         """
-        n_wds = 45000 #35000
-        # get normalized embeddings
+        n_wds = 20000 #35000
+        # get  embeddings
         #src_emb = self.mapping(self.emb[:self.ko_start])
         #tgt_emb = self.emb[self.ko_start:]
         if slang == 'en':

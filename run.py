@@ -166,7 +166,7 @@ def train(args: Dict):
                 char_size = char_size,
                 vocab=vocab,
                 wid2cid = wid2cid)
-    print(len(model.vocab.vocs.keys()))
+    # print(len(model.vocab.vocs.keys()))
     model.train()
 
     uniform_init = float(args['--uniform-init'])
@@ -338,7 +338,7 @@ def train(args: Dict):
 
                 if mapping_X==1:
                     #mapping = 1
-                    mapping=1 if n_X in [0,2,4,6,8] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
+                    mapping=1 if n_X in [0,2,4,6,8,10,13,16,19,22,25,28,32,36,40,45,50,55] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
                 else:
                     mapping =0
 
@@ -672,7 +672,7 @@ def train(args: Dict):
 
                 print('validation: iter %d, dev. ppl %f' % (train_iter, dev_ppl), file=sys.stderr)
                 
-                is_better = len(hist_valid_scores) == 0 or valid_metric > max(hist_valid_scores) - (patience + 1) * (0.00002 +self_trans*0.2)
+                is_better = len(hist_valid_scores) == 0 or valid_metric > max(hist_valid_scores) - (patience + 1) * (0.2 +self_trans*0.2)
                 hist_valid_scores.append(valid_metric)
 
                 if is_better:

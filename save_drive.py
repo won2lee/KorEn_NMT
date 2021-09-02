@@ -8,21 +8,30 @@ import shutil
 from glob import glob
 
 def main(args):
-
+    lang = ['en','ko']
     for i in range(20):
         pf_list = glob(args.in_path+"model.bi*")
         f_list = [f.split('/')[-1] for f in pf_list]
         for j in range(2):
             shutil.copy(pf_list[j],args.out_path)
-        print(f"saved : {time.time()}")
-        time.sleep(1800)
+            dict_l = "dict_"+lang[j]+".json"
+            shutil.copy(args.in_path+"net_Module/"+dict_l, args.out_path+dict_l)
+        print(f"step {i} saved : {time.time()}")
+        time.sleep(100)
+        for j in range(2):  
+            shutil.copy(pf_list[j],args.out_path2)
+
+        print(f"         saved : {time.time()}")
+        time.sleep(1700)
 
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='program to preproceed')
-    parser.add_argument('--in_path', default='', 
+    parser.add_argument('--in_path', default='/content/nmt_bi_128_256_0625/', 
                         help='root of the data')
-    parser.add_argument('--out_path', default="/content/drive/MyDrive/Cur_NMT/bin_0816/",
+    parser.add_argument('--out_path', default="/content/drive/MyDrive/Cur_NMT/bin_1010/",
+                        help='destination')
+    parser.add_argument('--out_path2', default="/content/drive/MyDrive/Cur_NMT/bin/",
                         help='destination')
     parser.add_argument('--dscd', action='store_true',
                         help='for descending ordering')
