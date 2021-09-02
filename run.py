@@ -166,7 +166,7 @@ def train(args: Dict):
                 char_size = char_size,
                 vocab=vocab,
                 wid2cid = wid2cid)
-    
+    print(len(model.vocab.vocs.keys()))
     model.train()
 
     uniform_init = float(args['--uniform-init'])
@@ -338,7 +338,7 @@ def train(args: Dict):
 
                 if mapping_X==1:
                     #mapping = 1
-                    mapping=1 if n_X in [0,2,4,6,8] else = 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
+                    mapping=1 if n_X in [0,2,4,6,8] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
                 else:
                     mapping =0
 
