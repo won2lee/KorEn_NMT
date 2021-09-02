@@ -16,6 +16,7 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
 
     path = 'net_Module/'
     cutline = 0.20 # <= 0.17
+    cutline2 = 0.18 # <= 0.17
     epsilon = 0.0001
     to_depreciate = 0.002 # <= 0.00005 
     emb_dim =256  
@@ -34,6 +35,13 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
         bi_dict_en = json.load(f)
     with open(path+'dict_ko.json', 'r') as f:
         bi_dict_ko = json.load(f)
+
+    vocab_keys_en = [k for k,v in vocabs.items() if int(v) <30004]
+    vocab_keys_ko = [k for k,v in vocabs.items() if int(v) >30003]
+    print(f"bi_dict_en_length : {len(bi_dict_en)}, bi_dict_ko_length : {len(bi_dict_ko)} ")
+    bi_dict_en = {k:v for k,v in bi_dict_en.items() if k in vocab_keys_en}
+    bi_dict_ko = {k:v for k,v in bi_dict_ko.items() if k in vocab_keys_ko}
+    print(f"bi_dict_en_length : {len(bi_dict_en)}, bi_dict_ko_length : {len(bi_dict_ko)} ")
     #else:
     #bi_dict = {}
 
@@ -69,7 +77,7 @@ def net_run(embed, vocab, trained_mapping, nul_mapping, device):
 
             bi_dict[il] = {k : {kv : vv - to_depreciate for kv,vv in v.items()} for k,v in bi_dict[il].items()} #to discount old_data
             new_dict = {net.vocs.id2word[w[0].item()]:(net.vocs.id2word[w[1].item()],scores[i].item()) 
-                            for i,w in enumerate(dict_lang[:20000]) if scores[i].item() > 0.165 }
+                            for i,w in enumerate(dict_lang[:20000]) if scores[i].item() > cutline2 }
             bi_dict[il] = dict_update(new_dict, bi_dict[il])
 
             mappings.append(W)

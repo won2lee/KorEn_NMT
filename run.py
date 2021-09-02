@@ -225,7 +225,7 @@ def train(args: Dict):
     patience_ceiling = int(args['--patience'])
     self_trans_X = int(args['--self_trans'])
 
-    pseudo_load = 1
+    pseudo_load = 0
     st_batch = 0
     bt_batch = 0
 
