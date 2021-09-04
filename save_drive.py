@@ -20,6 +20,8 @@ def main(args):
         time.sleep(100)
         for j in range(2):  
             shutil.copy(pf_list[j],args.out_path2)
+            dict_l = "dict_"+lang[j]+".json"
+            shutil.copy(args.in_path+"net_Module/"+dict_l, args.out_path2+dict_l)
 
         print(f"         saved : {time.time()}")
         time.sleep(1700)

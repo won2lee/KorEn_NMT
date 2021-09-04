@@ -339,7 +339,9 @@ def train(args: Dict):
                 if mapping_X==1:
                     #mapping = 1
                     #mapping=1 if n_X in [0,2,4,6,8,10,13,16,19,22,25,28,32,36,40,45,50,55] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
-                    mapping=1 if n_X in [0,3,6,9,12,16,20,24,28,32,36,40,44,48,52,56,60] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
+                    #mapping=1 if n_X in [0,3,6,9,12,16,20,24,28,32,36,40,44,48,52,56,60] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
+                    #mapping=1 if n_X in [0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
+                    mapping=1 if n_X in [0,5,10,15,20,25,30,35,40,45,50,55,60] else 0 #[0,1,2,3,4,5,6,7,8,9] and valid_metric>-3.485 else 0
                 else:
                     mapping =0
 
@@ -891,7 +893,7 @@ def main():
     args = docopt(__doc__)
 
     # Check pytorch version
-    assert(torch.__version__ == "1.0.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(torch.__version__)
+    # assert(torch.__version__ == "1.0.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(torch.__version__)
 
     # seed the random number generators
     """
