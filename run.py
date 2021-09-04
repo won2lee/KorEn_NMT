@@ -675,7 +675,8 @@ def train(args: Dict):
 
                 print('validation: iter %d, dev. ppl %f' % (train_iter, dev_ppl), file=sys.stderr)
                 
-                is_better = len(hist_valid_scores) == 0 or valid_metric > max(hist_valid_scores) - (patience + 1) * (0.2 +self_trans*0.2)
+                is_better = len(hist_valid_scores) == 0 or valid_metric > max(hist_valid_scores) - 0.002 * (patience + 1)**(1/3)
+                                                                                                ### (patience + 1) * (0.2 +self_trans*0.2)
                 hist_valid_scores.append(valid_metric)
 
                 if is_better:
