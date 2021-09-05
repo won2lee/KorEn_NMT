@@ -42,8 +42,8 @@ Options:
     --log-every=<int>                       log every [default: 100]
     --max-epoch=<int>                       max epoch [default: 30]
     --input-feed                            use input feeding
-    --patience=<int>                        wait for how many iterations to decay learning rate [default: 3]
-    --max-num-trial=<int>                   terminate training after how many trials [default: 5]
+    --patience=<int>                        wait for how many iterations to decay learning rate [default: 10]
+    --max-num-trial=<int>                   terminate training after how many trials [default: 15]
     --lr-decay=<float>                      learning rate decay [default: 0.7]
     --beam-size=<int>                       beam size [default: 10]
     --sample-size=<int>                     sample size [default: 5]
