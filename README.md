@@ -1,5 +1,11 @@
 # Korean-English Translation Model
 
+##### 본 모델 개요도 
+
+<img src="/images/KE_NMT.jpg" width="700px" title="본 모델 개요도" alt="KE_NMT"></img><br/>
+
+
+
 #### 데이터: 
 - 한글영어 번역 데이터 :  AI hub (110만개), OPUS의 JW300, ELRC, Ted 번역 데이터
 - 모노코퍼스 : 한글 영어 위키피디아, 영어 뉴스 등 
