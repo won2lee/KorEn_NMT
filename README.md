@@ -34,7 +34,7 @@
 
 - Self Training : 주로 Encoder 부분 학습 
 - Back-translation : 주로 Decoder 부분 학습
-- apping training: 영어와 한글의 embedding vector를 상호 align
+- Mapping training: 영어와 한글의 embedding vector를 상호 align
 
   CSLS 스코어가 높은 단어짝을 기준으로 한영 단어간 Mapping Matrix 를 만들고     
   이를 모델에 주입해 한영 Embed Vector를 align 시키는 Mapping  training 을 통해      
