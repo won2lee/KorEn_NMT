@@ -44,8 +44,8 @@
 - length normalization + coverage penalty (attention matrix 이용) 반영 
 
 #### 모델 디플로이: 
-영어는 한글로, 한글은 영어로 번역 
-https://github.com/won2lee/KE_Translator (python, pytorch, Flask 기반)
-https://fluent-outpost-276916.uc.r.appspot.com/ (set disabled now)
+영어는 한글로, 한글은 영어로 번역    
+https://github.com/won2lee/KE_Translator (python, pytorch, Flask 기반)    
+https://fluent-outpost-276916.uc.r.appspot.com/ (set disabled now)   
 
 
