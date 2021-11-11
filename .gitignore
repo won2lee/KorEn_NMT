@@ -14,7 +14,7 @@ vocab.json
 run_en2en.sh
 run_ko2en.sh
 run_ko2ko.sh
-
+*).py
 # added
 sanity*
 etc_file*/
